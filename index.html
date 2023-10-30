@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide">
+    <title>Koledar</title>
+</head>
+
+<body>
+	<!--Odzadje-->
+    <div class="wrapper">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="banner">
+        <div class="content-main">
+            <h2><b>KOLEDAR</b></h2>
+			<div class="contianer-header">
+				<button id="Nazaj" class="btn">Nazaj</button>
+				<label class="mesec">imeMeseca leto</label>
+				<button id="Naprej" class="btn">Naprej</button>
+			</div>
+			<div class="container-dnevi">
+			</div>
+        </div>
+    </div>
+
+    <script>
+        var month = 10;
+        var year = 2023;
+		var day = 1;
+        var imeMeseca;
+
+        function getMonthName(month) {
+            switch (month) {
+                case 1: return "Januar";
+                case 2: return "Februar";
+                case 3: return "Marc";
+                case 4: return "April";
+                case 5: return "Maj";
+                case 6: return "Junij";
+                case 7: return "Julij";
+                case 8: return "Avgust";
+                case 9: return "September";
+                case 10: return "Oktober";
+                case 11: return "November";
+                case 12: return "December";
+                default: return "Napaka";
+            }
+        }
+
+        function getDayName(day) {
+            switch (day) {
+                case 0: return "Nedelja";
+                case 1: return "Ponedeljek";
+                case 2: return "Torek";
+                case 3: return "Sreda";
+                case 4: return "Četrtek";
+                case 5: return "Petek";
+                case 6: return "Sobota";
+            }
+        }
+
+        function getDaysInMonth(month, year) {
+            return new Date(year, month, 0).getDate();
+        }
+
+		function isEaster(year, month, day) {
+			let date, a, b, c, m, d;
+			date = new Date();
+			date.setFullYear(year);
+			date.setMonth(month - 1);
+			date.setDate(day);
+			a = year % 19;
+			b = 2200 <= year && year <= 2299 ? (11 * a + 4) % 30 : (11 * a + 5) % 30;
+			c = b === 0 || (b === 1 && a > 10) ? b + 1 : b;
+			m = 1 <= c && c <= 19 ? 3 : 2;
+			d = (50 - c) % 31;
+			date.setMonth(m, d);
+			date.setMonth(m, d + (7 - date.getDay()));
+			return (
+				date.getFullYear() === year &&
+				date.getMonth() + 1 === month &&
+				date.getDate() === day
+			);
+		}
+//malo jquery-ja za občutek :)
+        $(document).ready(function () {
+            prikaziMesec(month, year);
+            $(".mesec").text(getMonthName(month) + " " + year);
+
+            $("#Naprej").click(function () {
+                month += 1;
+                if (month > 12) {
+                    month = 1;
+                    year++;
+                }
+                prikaziMesec(month, year);
+                $(".mesec").text(getMonthName(month) + " " + year);
+            });
+
+            $("#Nazaj").click(function () {
+                month -= 1;
+                if (month < 1) {
+                    month = 12;
+                    year--;
+                }
+                prikaziMesec(month, year);
+                $(".mesec").text(getMonthName(month) + " " + year);
+            });
+        });
+
+    function prikaziMesec(month, year) {
+		var firstDay = new Date(year, month - 1, 1).getDay();
+		var daysInMonth = new Date(year, month, 0).getDate();
+		var output = `
+			<div class="containerDnevi">
+				<div class="dnevi">NEDELJA</div>
+				<div class="dnevi">PONEDELJEK</div>
+				<div class="dnevi">TOREK</div>
+				<div class="dnevi">SREDA</div>
+				<div class="dnevi">ČETRTEK</div>
+				<div class="dnevi">PETEK</div>
+				<div class="dnevi">SOBOTA</div>
+		`;
+				//zafila prazne dive
+		for (var i = 0; i < firstDay; i++) {
+			output += '<div class="dan"></div>';
+		}
+
+		for (var i = 1; i <= daysInMonth; i++) {
+			let currentDay = new Date(year, month - 1, i).getDay();
+			let additionalClass = '';
+			if (currentDay === 6) additionalClass = 'sobota';
+			if (currentDay === 0) additionalClass = 'nedelja';
+			const najdenPraznik = pocitnice.find(praznik => praznik.day === i && praznik.month === month);
+			if(najdenPraznik) additionalClass = 'praznik'; 
+			if(isEaster(year, month, i)) additionalClass = 'praznik'; 
+			output += `<div class="dan ${additionalClass}">${i}</div>`;
+		}
+
+		output += '</div>';
+
+		document.querySelector('.container-dnevi').innerHTML = output;
+	}
+		const pocitnice = [
+			{
+				day: 1,
+				month: 1,
+				name: "Novo leto",
+			},
+			{
+				day: 2,
+				month: 1,
+				name: "Novo leto",
+			},
+			{
+				day: 8,
+				month: 2,
+				name: "Prešernov dan",
+			},
+			{
+				day: 27,
+				month: 4,
+				name: "Dan upora proti okupatorju",
+			},
+			{
+				day: 1,
+				month: 5,
+				name: "Praznik dela",
+			},
+			{
+				day: 2,
+				month: 5,
+				name: "Praznik dela",
+			},
+			{
+				day: 25,
+				month: 6,
+				name: "Dan državnosti",
+			},
+			{
+				day: 15,
+				month: 8,
+				name: "Marijino vnebovzetje",
+			},
+			{
+				day: 31,
+				month: 10,
+				name: "Dan reformacije",
+			},
+			{
+				day: 1,
+				month: 11,
+				name: "Dan spomina na mrtve",
+			},
+			{
+				day: 25,
+				month: 12,
+				name: "Božič",
+			},
+			{
+				day: 26,
+				month: 12,
+				name: "Dan samostojnosti in enotnosti",
+			},
+			];
+    </script>
+</body>
+
+</html>
